@@ -1,0 +1,28 @@
+*{
+    text-align: center;
+}
+
+html{
+    background-color: #a3f1ff;
+    font-size: 16px;
+}
+
+body{
+    width: 640px;
+    margin: auto;
+}
+
+h1{
+    font-size: 60px;
+}
+
+img{
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+}
+
+p{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.2em;
+}
