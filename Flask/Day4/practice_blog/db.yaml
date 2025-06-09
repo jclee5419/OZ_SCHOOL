@@ -1,0 +1,5 @@
+# 데이터베이스 설정
+mysql_host: "localhost"
+mysql_user: "root"
+mysql_password: "0000"
+mysql_db: "blog"

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Posts</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button.update {
+            background: #28a745;
+        }
+        
+        button.update:hover {
+            background: #1e7e34;
+        }
+        
+        button.delete {
+            background: #dc3545;
+        }
+        
+        button.delete:hover {
+            background: #c82333;
+        }
+        
+        button.cancel {
+            background: #6c757d;
+        }
+        
+        button.cancel:hover {
+            background: #545b62;
+        }
+        
+        .post-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .post-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .post-content {
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        
+        .post-actions {
+            margin-top: 10px;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blog Posts</h1>
+
+    <div class="container">
+        <h2>게시글 작성</h2>
+        <form id="postForm">
+            <div>
+                <label for="title">제목:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div>
+                <label for="content">내용:</label>
+                <textarea id="content" name="content" required></textarea>
+            </div>
+            <div>
+                <button type="submit" id="createButton">게시글 작성</button>
+                <button type="button" id="updateButton" class="update hidden">게시글 수정</button>
+                <button type="button" id="cancelButton" class="cancel hidden">취소</button>
+            </div>
+        </form>
+        
+        <div id="message" class="hidden"></div>
+    </div>
+
+    <hr>
+
+    <div class="container">
+        <h2>게시글 목록</h2>
+        <div id="loading" class="loading hidden">로딩 중...</div>
+        <div id="postsList"></div>
+    </div>
+
+    <script>
+        class BlogManager {
+            constructor() {
+                this.currentEditingId = null;
+                this.initializeEventListeners();
+                this.loadPosts();
+            }
+            
+            initializeEventListeners() {
+                document.getElementById("postForm").addEventListener("submit", this.handleSubmit.bind(this));
+                document.getElementById("updateButton").addEventListener("click", this.handleUpdate.bind(this));
+                document.getElementById("cancelButton").addEventListener("click", this.resetForm.bind(this));
+            }
+            
+            async handleSubmit(e) {
+                e.preventDefault();
+                const title = document.getElementById("title").value.trim();
+                const content = document.getElementById("content").value.trim();
+                
+                if (!title || !content) {
+                    this.showMessage("제목과 내용을 모두 입력해주세요.", "error");
+                    return;
+                }
+                
+                try {
+                    await this.createPost(title, content);
+                    this.showMessage("게시글이 성공적으로 작성되었습니다.", "success");
+                    this.resetForm();
+                    this.loadPosts();
+                } catch (error) {
+                    this.showMessage("게시글 작성 중 오류가 발생했습니다.", "error");
+                }
+            }
+            
+            async handleUpdate() {
+                const title = document.getElementById("title").value.trim();
+                const content = document.getElementById("content").value.trim();
+                
+                if (!title || !content) {
+                    this.showMessage("제목과 내용을 모두 입력해주세요.", "error");
+                    return;
+                }
+                
+                try {
+                    await this.updatePost(this.currentEditingId, title, content);
+                    this.showMessage("게시글이 성공적으로 수정되었습니다.", "success");
+                    this.resetForm();
+                    this.loadPosts();
+                } catch (error) {
+                    this.showMessage("게시글 수정 중 오류가 발생했습니다.", "error");
+                }
+            }
+            
+            async createPost(title, content) {
+                const response = await axios.post('/api/posts/', { title, content });
+                return response.data;
+            }
+            
+            async updatePost(id, title, content) {
+                const response = await axios.put(`/api/posts/${id}`, { title, content });
+                return response.data;
+            }
+            
+            async deletePost(id) {
+                const response = await axios.delete(`/api/posts/${id}`);
+                return response.data;
+            }
+            
+            async loadPosts() {
+                const loadingElement = document.getElementById("loading");
+                const postsListElement = document.getElementById("postsList");
+                
+                try {
+                    loadingElement.classList.remove("hidden");
+                    postsListElement.innerHTML = "";
+                    
+                    const response = await axios.get('/api/posts/');
+                    const posts = response.data;
+                    
+                    if (posts.length === 0) {
+                        postsListElement.innerHTML = '<p>게시글이 없습니다.</p>';
+                        return;
+                    }
+                    
+                    posts.forEach(post => {
+                        const postElement = this.createPostElement(post);
+                        postsListElement.appendChild(postElement);
+                    });
+                    
+                } catch (error) {
+                    console.error('게시글 로드 오류:', error);
+                    postsListElement.innerHTML = '<p class="error">게시글을 불러올 수 없습니다.</p>';
+                } finally {
+                    loadingElement.classList.add("hidden");
+                }
+            }
+            
+            createPostElement(post) {
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post-item';
+                postDiv.innerHTML = `
+                    <div class="post-title">${this.escapeHtml(post.title)}</div>
+                    <div class="post-content">${this.escapeHtml(post.content)}</div>
+                    <div class="post-actions">
+                        <button onclick="blogManager.editPost(${post.id})">수정</button>
+                        <button class="delete" onclick="blogManager.confirmDelete(${post.id})">삭제</button>
+                    </div>
+                `;
+                return postDiv;
+            }
+            
+            async editPost(id) {
+                try {
+                    const response = await axios.get(`/api/posts/${id}`);
+                    const post = response.data;
+                    
+                    this.currentEditingId = id;
+                    document.getElementById("title").value = post.title;
+                    document.getElementById("content").value = post.content;
+                    
+                    document.getElementById("createButton").classList.add("hidden");
+                    document.getElementById("updateButton").classList.remove("hidden");
+                    document.getElementById("cancelButton").classList.remove("hidden");
+                    
+                    // 폼으로 스크롤
+                    document.getElementById("postForm").scrollIntoView({ behavior: 'smooth' });
+                    
+                } catch (error) {
+                    this.showMessage("게시글을 불러올 수 없습니다.", "error");
+                }
+            }
+            
+            async confirmDelete(id) {
+                if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+                    try {
+                        await this.deletePost(id);
+                        this.showMessage("게시글이 성공적으로 삭제되었습니다.", "success");
+                        this.loadPosts();
+                    } catch (error) {
+                        this.showMessage("게시글 삭제 중 오류가 발생했습니다.", "error");
+                    }
+                }
+            }
+            
+            resetForm() {
+                this.currentEditingId = null;
+                document.getElementById("title").value = '';
+                document.getElementById("content").value = '';
+                
+                document.getElementById("createButton").classList.remove("hidden");
+                document.getElementById("updateButton").classList.add("hidden");
+                document.getElementById("cancelButton").classList.add("hidden");
+                
+                this.hideMessage();
+            }
+            
+            showMessage(message, type) {
+                const messageElement = document.getElementById("message");
+                messageElement.textContent = message;
+                messageElement.className = type;
+                messageElement.classList.remove("hidden");
+                
+                // 3초 후 메시지 숨기기
+                setTimeout(() => {
+                    this.hideMessage();
+                }, 3000);
+            }
+            
+            hideMessage() {
+                const messageElement = document.getElementById("message");
+                messageElement.classList.add("hidden");
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+        
+        // 애플리케이션 초기화
+        const blogManager = new BlogManager();
+    </script>
+</body>
+</html>
