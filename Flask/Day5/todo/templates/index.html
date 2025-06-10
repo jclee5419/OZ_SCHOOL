@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-section, .todo-section {
+            margin-bottom: 30px;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"], input[type="password"] {
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(252, 182, 159, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .todo-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .todo-form input {
+            flex: 1;
+        }
+
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .todo-item {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .todo-item.completed {
+            background: rgba(72, 187, 120, 0.1);
+            border-color: #48bb78;
+        }
+
+        .todo-item.completed .todo-title {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .todo-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .todo-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: rgba(72, 187, 120, 0.1);
+            color: #2d7738;
+            border: 2px solid #48bb78;
+        }
+
+        .message.error {
+            background: rgba(245, 101, 101, 0.1);
+            color: #c53030;
+            border: 2px solid #f56565;
+        }
+
+        .user-info {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 15px;
+        }
+
+        .user-info h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .todo-form {
+                flex-direction: column;
+            }
+
+            .todo-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .todo-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Todo App</h1>
+        </div>
+
+        <div id="message" class="message hidden"></div>
+
+        <!-- 로그인/회원가입 섹션 -->
+        <div id="auth-section" class="auth-section">
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="username">사용자명</label>
+                    <input type="text" id="username" placeholder="사용자명을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" placeholder="비밀번호를 입력하세요">
+                </div>
+                <button class="btn btn-primary" onclick="login()">로그인</button>
+                <button class="btn btn-secondary" onclick="register()">회원가입</button>
+            </div>
+        </div>
+
+        <!-- Todo 섹션 -->
+        <div id="todo-section" class="todo-section hidden">
+            <div class="user-info">
+                <h2>환영합니다! <span id="current-user"></span>님</h2>
+                <button class="btn btn-danger btn-small" onclick="logout()">로그아웃</button>
+            </div>
+
+            <div class="todo-form">
+                <input type="text" id="todo-input" placeholder="새로운 할 일을 입력하세요...">
+                <button class="btn btn-primary" onclick="addTodo()">추가</button>
+            </div>
+
+            <div id="todo-list" class="todo-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentUser = '';
+        let accessToken = '';
+
+        // 메시지 표시 함수
+        function showMessage(text, type = 'success') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.classList.remove('hidden');
+            setTimeout(() => {
+                messageEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        // 로그인 함수
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showMessage('사용자명과 비밀번호를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    accessToken = data.access_token;
+                    currentUser = username;
+                    document.getElementById('current-user').textContent = currentUser;
+                    document.getElementById('auth-section').classList.add('hidden');
+                    document.getElementById('todo-section').classList.remove('hidden');
+                    showMessage('로그인 성공!');
+                    loadTodos();
+                } else {
+                    showMessage(data.message || '로그인에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+
+        // 회원가입 함수
+        async function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showMessage('사용자명과 비밀번호를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('회원가입 성공! 로그인해주세요.');
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                } else {
+                    showMessage(data.message || '회원가입에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+
+        // 로그아웃 함수
+        function logout() {
+            accessToken = '';
+            currentUser = '';
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('todo-section').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('todo-input').value = '';
+            document.getElementById('todo-list').innerHTML = '';
+            showMessage('로그아웃되었습니다.');
+        }
+
+        // Todo 목록 로드 함수
+        async function loadTodos() {
+            try {
+                const response = await fetch(`${API_BASE}/todos`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const todos = await response.json();
+                    renderTodos(todos);
+                } else if (response.status === 401) {
+                    showMessage('인증이 만료되었습니다. 다시 로그인해주세요.', 'error');
+                    logout();
+                } else {
+                    showMessage('할 일 목록을 불러오는데 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+
+        // Todo 목록 렌더링 함수
+        function renderTodos(todos) {
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+
+            if (todos.length === 0) {
+                todoList.innerHTML = '<p style="text-align: center; color: #888; font-style: italic;">할 일이 없습니다. 새로운 할 일을 추가해보세요!</p>';
+                return;
+            }
+
+            todos.forEach(todo => {
+                const todoItem = document.createElement('div');
+                todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                todoItem.innerHTML = `
+                    <div class="todo-content">
+                        <input type="checkbox" ${todo.completed ? 'checked' : ''} 
+                               onchange="toggleTodo(${todo.id}, this.checked)">
+                        <span class="todo-title">${todo.title}</span>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="btn btn-danger btn-small" onclick="deleteTodo(${todo.id})">삭제</button>
+                    </div>
+                `;
+                todoList.appendChild(todoItem);
+            });
+        }
+
+        // Todo 추가 함수
+        async function addTodo() {
+            const title = document.getElementById('todo-input').value.trim();
+
+            if (!title) {
+                showMessage('할 일을 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/todos`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ title })
+                });
+
+                if (response.ok) {
+                    document.getElementById('todo-input').value = '';
+                    showMessage('할 일이 추가되었습니다.');
+                    loadTodos();
+                } else if (response.status === 401) {
+                    showMessage('인증이 만료되었습니다. 다시 로그인해주세요.', 'error');
+                    logout();
+                } else {
+                    showMessage('할 일 추가에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+
+        // Todo 완료 상태 토글 함수
+        async function toggleTodo(id, completed) {
+            try {
+                const response = await fetch(`${API_BASE}/todos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ completed })
+                });
+
+                if (response.ok) {
+                    loadTodos();
+                } else if (response.status === 401) {
+                    showMessage('인증이 만료되었습니다. 다시 로그인해주세요.', 'error');
+                    logout();
+                } else {
+                    showMessage('할 일 수정에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+
+        // Todo 삭제 함수
+        async function deleteTodo(id) {
+            if (!confirm('정말로 이 할 일을 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/todos/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    showMessage('할 일이 삭제되었습니다.');
+                    loadTodos();
+                } else if (response.status === 401) {
+                    showMessage('인증이 만료되었습니다. 다시 로그인해주세요.', 'error');
+                    logout();
+                } else {
+                    showMessage('할 일 삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showMessage('서버 연결에 실패했습니다.', 'error');
+            }
+        }
+
+        // Enter 키 이벤트 처리
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('username').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+
+            document.getElementById('todo-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTodo();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input, select {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .delete-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            font-size: 14px;
+            padding: 8px 15px;
+        }
+
+        .like-btn {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            font-size: 14px;
+            padding: 8px 15px;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .user-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .username {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .post {
+            background: linear-gradient(135deg, #f1f3f4, #ffffff);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .post-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .post-likes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .likes-count {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f1aeb5);
+            color: #721c24;
+            border: 1px solid #f1aeb5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            input, select, button {
+                min-width: 100%;
+            }
+            
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 User Management System</h1>
+        
+        <!-- 사용자 생성 섹션 -->
+        <div class="section">
+            <h2>👤 새 사용자 만들기</h2>
+            <div class="form-group">
+                <input type="text" id="newUsername" placeholder="사용자명을 입력하세요">
+                <button onclick="createUser()">사용자 생성</button>
+            </div>
+        </div>
+
+        <!-- 게시물 추가 섹션 -->
+        <div class="section">
+            <h2>📝 게시물 추가</h2>
+            <div class="form-group">
+                <select id="userSelect">
+                    <option value="">사용자를 선택하세요</option>
+                </select>
+                <input type="text" id="postTitle" placeholder="게시물 제목을 입력하세요">
+                <input type="number" id="postLikes" placeholder="좋아요 수" value="0" min="0">
+                <button onclick="addPost()">게시물 추가</button>
+            </div>
+        </div>
+
+        <!-- 메시지 표시 영역 -->
+        <div id="message"></div>
+
+        <!-- 사용자 목록 표시 영역 -->
+        <div class="section">
+            <h2>👥 사용자 목록</h2>
+            <button onclick="loadUsers()" style="margin-bottom: 20px;">🔄 새로고침</button>
+            <div id="usersList" class="users-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        // 메시지 표시 함수
+        function showMessage(text, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // 사용자 목록 로드
+        async function loadUsers() {
+            try {
+                document.getElementById('usersList').innerHTML = '<div class="loading">로딩 중...</div>';
+                
+                const response = await fetch('/users');
+                const data = await response.json();
+                
+                displayUsers(data.users);
+                updateUserSelect(data.users);
+            } catch (error) {
+                showMessage('사용자 목록을 불러오는데 실패했습니다.', 'error');
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // 사용자 목록 표시
+        function displayUsers(users) {
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<div class="loading">등록된 사용자가 없습니다.</div>';
+                return;
+            }
+
+            usersList.innerHTML = users.map(user => `
+                <div class="user-card">
+                    <div class="user-header">
+                        <span class="username">@${user.username}</span>
+                        <button class="delete-btn" onclick="deleteUser('${user.username}')">
+                            🗑️ 삭제
+                        </button>
+                    </div>
+                    <div class="posts">
+                        <h4>게시물 (${user.posts.length}개)</h4>
+                        ${user.posts.map(post => `
+                            <div class="post">
+                                <div class="post-title">${post.title}</div>
+                                <div class="post-likes">
+                                    <span class="likes-count">❤️ ${post.likes} 좋아요</span>
+                                    <button class="like-btn" onclick="likePost('${user.username}', '${post.title}')">
+                                        👍 좋아요
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 사용자 선택 드롭다운 업데이트
+        function updateUserSelect(users) {
+            const userSelect = document.getElementById('userSelect');
+            userSelect.innerHTML = '<option value="">사용자를 선택하세요</option>' +
+                users.map(user => `<option value="${user.username}">${user.username}</option>`).join('');
+        }
+
+        // 새 사용자 생성
+        async function createUser() {
+            const username = document.getElementById('newUsername').value.trim();
+            
+            if (!username) {
+                showMessage('사용자명을 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username })
+                });
+
+                if (response.ok) {
+                    const newUser = await response.json();
+                    showMessage(`사용자 "${username}"이(가) 성공적으로 생성되었습니다!`);
+                    document.getElementById('newUsername').value = '';
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    showMessage(`사용자 생성 실패: ${error.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('사용자 생성 중 오류가 발생했습니다.', 'error');
+                console.error('Error creating user:', error);
+            }
+        }
+
+        // 게시물 추가
+        async function addPost() {
+            const username = document.getElementById('userSelect').value;
+            const title = document.getElementById('postTitle').value.trim();
+            const likes = parseInt(document.getElementById('postLikes').value) || 0;
+
+            if (!username) {
+                showMessage('사용자를 선택해주세요.', 'error');
+                return;
+            }
+
+            if (!title) {
+                showMessage('게시물 제목을 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/users/post/${username}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: title, likes: likes })
+                });
+
+                if (response.ok) {
+                    const newPost = await response.json();
+                    showMessage(`"${title}" 게시물이 성공적으로 추가되었습니다!`);
+                    document.getElementById('postTitle').value = '';
+                    document.getElementById('postLikes').value = '0';
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    showMessage(`게시물 추가 실패: ${error.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('게시물 추가 중 오류가 발생했습니다.', 'error');
+                console.error('Error adding post:', error);
+            }
+        }
+
+        // 게시물 좋아요
+        async function likePost(username, title) {
+            try {
+                const response = await fetch(`/users/post/like/${encodeURIComponent(username)}/${encodeURIComponent(title)}`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    const updatedPost = await response.json();
+                    showMessage(`"${title}" 게시물에 좋아요를 눌렀습니다!`);
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    showMessage(`좋아요 실패: ${error.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('좋아요 처리 중 오류가 발생했습니다.', 'error');
+                console.error('Error liking post:', error);
+            }
+        }
+
+        // 사용자 삭제
+        async function deleteUser(username) {
+            if (!confirm(`정말로 "${username}" 사용자를 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/users/${encodeURIComponent(username)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage(`사용자 "${username}"이(가) 성공적으로 삭제되었습니다.`);
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    showMessage(`사용자 삭제 실패: ${error.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('사용자 삭제 중 오류가 발생했습니다.', 'error');
+                console.error('Error deleting user:', error);
+            }
+        }
+
+        // 페이지 로드 시 사용자 목록 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+        });
+    </script>
+</body>
+</html>
